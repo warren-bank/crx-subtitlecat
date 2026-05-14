@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         subtitlecat
 // @description  Determine the best matching subtitle on "subtitlecat.com".
-// @version      1.0.1
+// @version      1.0.2
 // @match        *://*.subtitlecat.com/index.php?search=*
 // @match        *://*.subtitlecat.com/subs/*
 // @icon         https://www.subtitlecat.com/favicon_large.jpg
+// @require      https://cdn.jsdelivr.net/npm/@warren-bank/disable-module-loaders@1.0.0/js/disable-module-loaders.js
 // @require      https://cdn.jsdelivr.net/npm/sha-1@1.0.0/dist/sha1.umd.js
 // @run-at       document-end
 // @grant        unsafeWindow
