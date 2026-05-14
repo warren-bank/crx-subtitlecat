@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         subtitlecat
 // @description  Determine the best matching subtitle on "subtitlecat.com".
-// @version      1.0.0
+// @version      1.0.1
 // @match        *://*.subtitlecat.com/index.php?search=*
 // @match        *://*.subtitlecat.com/subs/*
 // @icon         https://www.subtitlecat.com/favicon_large.jpg
@@ -66,7 +66,7 @@ const get_cookie_value = (key) => {
 }
 
 const set_cookie_value = (key, val) => {
-  unsafeWindow.document.cookie = `${key}=${val};domain=${window.location.hostname};path=${window.location.pathname};max-age=${60*60*24*365}`
+  unsafeWindow.document.cookie = `${key}=${val};domain=${unsafeWindow.location.hostname};path=${unsafeWindow.location.pathname};max-age=${60*60*24*365}`
 }
 
 const persist_form_fields = (airplay_host, airplay_port, airplay_tls) => {
@@ -89,7 +89,7 @@ const process_search_results = () => {
     console.log(search_results)
 
   if (user_options.search_results.redirect_to_best_match)
-    window.location = search_results[0].url
+    unsafeWindow.location = search_results[0].url
   else
     rewrite_dom_for_search_results(search_results)
 }
@@ -362,5 +362,8 @@ const init = () => {
 
 if (user_options.debug && (typeof unsafeWindow === 'undefined'))
   window.unsafeWindow = window
+
+if (user_options.debug)
+  debugger;
 
 init()
