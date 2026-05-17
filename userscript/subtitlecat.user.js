@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         subtitlecat
 // @description  Determine the best matching subtitle on "subtitlecat.com".
-// @version      1.0.3
+// @version      1.0.4
 // @match        *://*.subtitlecat.com/*
 // @icon         https://www.subtitlecat.com/favicon_large.jpg
 // @require      https://cdn.jsdelivr.net/npm/@warren-bank/disable-module-loaders@1.0.0/js/disable-module-loaders.js
@@ -180,6 +180,12 @@ const normalize_search_results = () => {
 const rewrite_dom_for_search_results = search_results => {
   update_dom_remove_dynamic_content()
 
+  const $style = make_element('style', null, `
+body > table td {
+  word-break: break-all;
+}
+  `)
+
   const $table = make_element('table')
   let $tr, $td
 
@@ -206,6 +212,9 @@ const rewrite_dom_for_search_results = search_results => {
   $table.setAttribute('border', '1')
   $table.setAttribute('cellpadding', '4')
   $table.style.backgroundColor = 'white'
+
+  const $head = unsafeWindow.document.getElementsByTagName('head')[0]
+  $head.appendChild($style)
 
   const $body = unsafeWindow.document.body
   empty_dom_node($body)
