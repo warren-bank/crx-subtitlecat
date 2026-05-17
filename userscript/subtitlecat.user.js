@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         subtitlecat
 // @description  Determine the best matching subtitle on "subtitlecat.com".
-// @version      1.0.4
+// @version      1.0.5
 // @match        *://*.subtitlecat.com/*
 // @icon         https://www.subtitlecat.com/favicon_large.jpg
 // @require      https://cdn.jsdelivr.net/npm/@warren-bank/disable-module-loaders@1.0.0/js/disable-module-loaders.js
@@ -227,7 +227,11 @@ body > table td {
 const process_subtitle = () => {
   const subtitle = normalize_subtitles()
     .filter(obj => obj.language === user_options.translated_from)
-  if (!subtitle.length) return
+
+  if (!subtitle.length) {
+    translate_subtitle()
+    return
+  }
 
   if (user_options.debug)
     console.log(subtitle)
@@ -250,6 +254,43 @@ const normalize_subtitles = () => {
         : null
     })
     .filter(obj => !!obj)
+}
+
+const translate_subtitle = () => {
+  for (const $div of unsafeWindow.document.querySelectorAll('div.sub-single')) {
+    const $span = [...$div.children].filter(el => el.tagName === 'SPAN')
+    if ($span.length !== 3) continue
+
+    const language = $span[1].textContent.trim().toLowerCase()
+    if (language !== user_options.translated_from) continue
+
+    const $button = $span[2].querySelector('button.yellow-link')
+    if (!$button) continue
+
+    const libTimer = unsafeWindow.setInterval(() => {
+      if (typeof unsafeWindow.translate_from_server_folder === 'function') {
+        unsafeWindow.clearInterval(libTimer)
+
+        const urlTimer = unsafeWindow.setInterval(() => {
+          const url = $button.querySelector('a[href]')?.href
+          if (url) {
+            unsafeWindow.clearInterval(urlTimer)
+
+            const subtitle = {url, language}
+            rewrite_dom_for_subtitle(subtitle)
+          }
+        }, 500)
+
+        $button.dispatchEvent(new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          view: unsafeWindow
+        }))
+      }
+    }, 500)
+
+    break
+  }
 }
 
 const rewrite_dom_for_subtitle = subtitle => {
