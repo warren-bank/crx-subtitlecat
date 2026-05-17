@@ -12,7 +12,7 @@
 
 #### Purpose
 
-* determine the best matching subtitle on [subtitlecat.com](https://www.subtitlecat.com/index.php?search=)
+* determine the best matching subtitle on [subtitlecat.com](https://www.subtitlecat.com/)
 * rewrite the page DOM to include:
   - a link to directly download the .SRT file
   - a form that is a minimal subset of [this AirPlay sender form](http://webcast-reloaded.frii.site/airplay_sender.html)

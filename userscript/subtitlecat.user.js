@@ -1,9 +1,8 @@
 // ==UserScript==
 // @name         subtitlecat
 // @description  Determine the best matching subtitle on "subtitlecat.com".
-// @version      1.0.2
-// @match        *://*.subtitlecat.com/index.php?search=*
-// @match        *://*.subtitlecat.com/subs/*
+// @version      1.0.3
+// @match        *://*.subtitlecat.com/*
 // @icon         https://www.subtitlecat.com/favicon_large.jpg
 // @require      https://cdn.jsdelivr.net/npm/@warren-bank/disable-module-loaders@1.0.0/js/disable-module-loaders.js
 // @require      https://cdn.jsdelivr.net/npm/sha-1@1.0.0/dist/sha1.umd.js
@@ -24,7 +23,7 @@ const user_options = {
   "translated_from": "english",
   "search_results": {
     "filter": true,
-    "redirect_to_best_match": true
+    "redirect_to_best_match": false
   },
   "airplay_receiver": {
     "host": "",
@@ -76,6 +75,60 @@ const persist_form_fields = (airplay_host, airplay_port, airplay_tls) => {
   set_cookie_value('airplay_tls',  (airplay_tls ? '1' : '0'))
 }
 
+// ----------------------------------------------------------------------------- common DOM management
+
+// needed to remove all document event listeners;
+// creates an empty document, and keeps the default page styles.
+const reset_document = () => {
+  let $head
+
+  $head = unsafeWindow.document.getElementsByTagName('head')[0]
+  const $css = $head.querySelectorAll('link[rel="stylesheet"]')
+
+  unsafeWindow.document.open()
+  unsafeWindow.document.write('')
+  unsafeWindow.document.close()
+
+  $head = unsafeWindow.document.getElementsByTagName('head')[0]
+  for (const $link of $css) {
+    $head.appendChild($link)
+  }
+}
+
+const update_dom_remove_dynamic_content = () => {
+  reset_document()
+
+  unsafeWindow.Date.now = () => 0
+  unsafeWindow.eval     = () => {}
+
+  unsafeWindow.setInterval(() => {
+    for (const $el of unsafeWindow.document.querySelectorAll('iframe, body > script')) {
+      $el.remove()
+    }
+  }, 500)
+}
+
+// ----------------------------------------------------------------------------- search form w/o results
+
+const process_search_form = () => {
+  const $header = unsafeWindow.document.querySelector('body > header')
+  const $search = unsafeWindow.document.querySelector('body > div.top-search')
+  if (!$search) return
+
+  rewrite_dom_for_search_form([$header, $search])
+}
+
+const rewrite_dom_for_search_form = (childNodes) => {
+  update_dom_remove_dynamic_content()
+
+  const $body = unsafeWindow.document.body
+  empty_dom_node($body)
+
+  for (const node of childNodes) {
+    if (node) $body.appendChild(node)
+  }
+}
+
 // ----------------------------------------------------------------------------- search results
 
 const process_search_results = () => {
@@ -83,7 +136,7 @@ const process_search_results = () => {
 
   const search_results = normalize_search_results()
     .filter(obj => obj.language === user_options.translated_from)
-    .sort((a,b) => b.downloads - a.downloads)
+    .sort((a,b) => (b.downloads - a.downloads) || (b.size - a.size))
   if (!search_results.length) return
 
   if (user_options.debug)
@@ -109,7 +162,7 @@ const normalize_search_results = () => {
 
       const name = $a.textContent.trim()
       const url = $a.href
-      const match = language_regex.exec($a.nextSibling.textContent)
+      const match = $a.nextSibling ? language_regex.exec($a.nextSibling.textContent) : null
       const language = match ? match[1].toLowerCase() : null
       const size = unsafeWindow.parseInt(
         $td[2].querySelector('span.sub-table__metric-value')?.textContent || '0',
@@ -125,6 +178,8 @@ const normalize_search_results = () => {
 }
 
 const rewrite_dom_for_search_results = search_results => {
+  update_dom_remove_dynamic_content()
+
   const $table = make_element('table')
   let $tr, $td
 
@@ -189,6 +244,8 @@ const normalize_subtitles = () => {
 }
 
 const rewrite_dom_for_subtitle = subtitle => {
+  update_dom_remove_dynamic_content()
+
   const $style = make_element('style', null, `
 body > div .oneline {
   height: 2em;
@@ -355,10 +412,18 @@ const send_message = (path, data, callback, is_retry) => {
 // ----------------------------------------------------------------------------- init
 
 const init = () => {
-  if (unsafeWindow.location.pathname.startsWith('/subs/'))
+  const pathname = unsafeWindow.location.pathname.toLowerCase()
+  const search   = unsafeWindow.location.search
+
+  if (pathname.startsWith('/subs/')) {
     process_subtitle()
-  else
-    process_search_results()
+  }
+  else if (['/', '/index.php'].includes(pathname)) {
+    if (search.includes('search='))
+      process_search_results()
+    else
+      process_search_form()
+  }
 }
 
 if (user_options.debug && (typeof unsafeWindow === 'undefined'))
