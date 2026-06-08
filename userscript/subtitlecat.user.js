@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Subtitle Cat
 // @description  Determine the best matching subtitle on "subtitlecat.com".
-// @version      1.0.6
+// @version      1.0.7
 // @match        *://*.subtitlecat.com/*
 // @icon         https://www.subtitlecat.com/favicon_large.jpg
 // @require      https://cdn.jsdelivr.net/npm/@warren-bank/disable-module-loaders@1.0.0/js/disable-module-loaders.js
@@ -181,7 +181,13 @@ const rewrite_dom_for_search_results = search_results => {
   update_dom_remove_dynamic_content()
 
   const $style = make_element('style', null, `
-body > table td {
+body > table td,
+body > table th {
+  padding: 4px;
+  white-space: pre;
+}
+body > table td > a[href] {
+  white-space: normal;
   word-break: break-all;
 }
   `)
@@ -297,20 +303,28 @@ const rewrite_dom_for_subtitle = subtitle => {
   update_dom_remove_dynamic_content()
 
   const $style = make_element('style', null, `
-body > div .oneline {
+.oneline {
   height: 2em;
   line-height: 2em;
   white-space: nowrap;
 }
-body > div .oneline > * {
+.oneline > * {
   height: 100%;
   vertical-align: middle;
 }
-body > div .left {
+.right {
+  text-align: right;
+  padding-right: 0.5em;
+}
+.left {
   text-align: left;
 }
-body > div .right {
-  text-align: right;
+h3 {
+  margin: 0;
+}
+input[type="text"],
+input[type="number"] {
+  width: 100%;
 }
   `)
 
