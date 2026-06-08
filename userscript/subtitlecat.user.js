@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         subtitlecat
+// @name         Subtitle Cat
 // @description  Determine the best matching subtitle on "subtitlecat.com".
-// @version      1.0.5
+// @version      1.0.6
 // @match        *://*.subtitlecat.com/*
 // @icon         https://www.subtitlecat.com/favicon_large.jpg
 // @require      https://cdn.jsdelivr.net/npm/@warren-bank/disable-module-loaders@1.0.0/js/disable-module-loaders.js

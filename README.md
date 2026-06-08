@@ -1,4 +1,4 @@
-### [subtitlecat](https://github.com/warren-bank/crx-subtitlecat/tree/userscript/es6)
+### [Subtitle Cat](https://github.com/warren-bank/crx-subtitlecat/tree/userscript/es6)
 
 [Userscript](https://github.com/warren-bank/crx-subtitlecat/raw/userscript/es6/userscript/subtitlecat.user.js) to run in:
 * the [WebMonkey](https://github.com/warren-bank/Android-WebMonkey) application
